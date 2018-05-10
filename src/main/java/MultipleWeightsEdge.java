@@ -23,6 +23,11 @@ public class MultipleWeightsEdge extends DefaultEdge
         this.flow = flow;
     }
 
+    public void setEndurance(double endurance)
+    {
+        this.endurance = endurance;
+    }
+
     public double getCapacity()
     {
         return capacity;
