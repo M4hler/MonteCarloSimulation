@@ -25,7 +25,7 @@ public class Exercise2
 
         for (int i = 1; i <= 10; i++)
         {
-            graph.addVertex("v" + i);
+            graph.addVertex(String.valueOf(i));
         }
 
     }
@@ -46,14 +46,13 @@ public class Exercise2
                 int secondVertex = j + 1;
 
                 DijkstraShortestPath dijkstraPath = new DijkstraShortestPath(graph);
-                GraphPath path = dijkstraPath.getPath("v" + firstVertex, "v" + secondVertex);
+                GraphPath path = dijkstraPath.getPath(String.valueOf(firstVertex), String.valueOf(secondVertex));
 
                 for(int k = 0; k < path.getLength(); k++)
                 {
                     MultipleWeightsEdge e = (MultipleWeightsEdge)path.getEdgeList().get(k);
                     e.setFlow(e.getFlow() + flowMatrix[i][j]);
-                    double newFlow = e.getFlow();
-                    e.setCapacity(newFlow + 0.5 * newFlow);
+                    e.setCapacity(25);
                 }
             }
         }
@@ -74,7 +73,7 @@ public class Exercise2
                 int secondVertex = j + 1;
 
                 DijkstraShortestPath dijkstraPath = new DijkstraShortestPath(graph);
-                GraphPath path = dijkstraPath.getPath("v" + firstVertex, "v" + secondVertex);
+                GraphPath path = dijkstraPath.getPath(String.valueOf(firstVertex), String.valueOf(secondVertex));
 
                 if(path == null)
                 {
@@ -99,9 +98,9 @@ public class Exercise2
     {
         Random generator = new Random();
 
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 5; i++)
         {
-            int firstVertexNumber = generator.nextInt(10) + 1;
+/*            int firstVertexNumber = generator.nextInt(10) + 1;
             int secondVertexNumber = generator.nextInt(10) + 1;
 
             while (secondVertexNumber == firstVertexNumber) {
@@ -109,7 +108,7 @@ public class Exercise2
             }
 
             DijkstraShortestPath dijkstraPath = new DijkstraShortestPath(graph);
-            GraphPath path = dijkstraPath.getPath("v" + firstVertexNumber, "v" + secondVertexNumber);
+            GraphPath path = dijkstraPath.getPath(String.valueOf(firstVertexNumber), String.valueOf(secondVertexNumber));
 
             for (int j = 0; j < path.getLength(); j++)
             {
@@ -129,6 +128,23 @@ public class Exercise2
                     }
                     break;
                 }
+            }*/
+
+            for(MultipleWeightsEdge e : graph.edgeSet())
+            {
+                double edgeDestroyed = generator.nextDouble();
+                if(edgeDestroyed > e.getEndurance())
+                {
+                    graph.removeEdge(e);
+                    break;
+                }
+            }
+
+            boolean b = adjustWeights();
+            if(b == false)
+            {
+                connected = false;
+                return;
             }
 
             ConnectivityInspector inspector = new ConnectivityInspector(graph);
@@ -200,7 +216,7 @@ public class Exercise2
                     {
                         if(graphMatrix[i][j].equals("1"))
                         {
-                            addEdge("v" + (i + 1), "v" + (j + 1), 0, 0, 0.99);
+                            addEdge(String.valueOf(i + 1), String.valueOf(j + 1), 0, 0, 0.99);
                         }
                     }
                 }
@@ -230,8 +246,8 @@ public class Exercise2
                     {
                         edgeReliability[i][j] = Double.valueOf(regex[j]);
                     }
-                    s = br.readLine();
 
+                    s = br.readLine();
                     regex = s.split(" ");
                 }
 
@@ -241,7 +257,7 @@ public class Exercise2
                     {
                         if(edgeReliability[i][j] != 0)
                         {
-                            graph.getEdge("v" + (i + 1), "v" + (j + 1)).setEndurance(edgeReliability[i][j]);
+                            graph.getEdge(String.valueOf(i + 1), String.valueOf(j + 1)).setEndurance(edgeReliability[i][j]);
                         }
                     }
                 }

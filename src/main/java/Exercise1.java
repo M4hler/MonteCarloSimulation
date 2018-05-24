@@ -1,3 +1,4 @@
+import com.sun.javafx.geom.Edge;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
@@ -22,13 +23,13 @@ public class Exercise1
 
         for(int i = 1; i <= 20; i++)
         {
-            graph.addVertex("v" + i);
+            graph.addVertex(String.valueOf(i));
         }
 
         for(int i = 1; i < 20; i++)
         {
             DefaultWeightedEdge edge = new DefaultWeightedEdge();
-            graph.addEdge("v" + i, "v" + (i + 1), edge);
+            graph.addEdge(String.valueOf(i), String.valueOf(i + 1), edge);
             graph.setEdgeWeight(edge, 0.95);
         }
     }
@@ -37,9 +38,9 @@ public class Exercise1
     {
         Random generator = new Random();
 
-        for(int i = 0; i < 10; i++)
+        for(int i = 0; i < 5; i++)
         {
-            int firstVertexNumber = generator.nextInt(20) + 1;
+/*            int firstVertexNumber = generator.nextInt(20) + 1;
             int secondVertexNumber = generator.nextInt(20) + 1;
 
             while(secondVertexNumber == firstVertexNumber)
@@ -48,7 +49,7 @@ public class Exercise1
             }
 
             DijkstraShortestPath dijkstraPath = new DijkstraShortestPath(graph);
-            GraphPath path = dijkstraPath.getPath("v" + firstVertexNumber, "v" + secondVertexNumber);
+            GraphPath path = dijkstraPath.getPath(firstVertexNumber, secondVertexNumber);
 
             for(int j = 0; j < path.getLength(); j++)
             {
@@ -61,6 +62,15 @@ public class Exercise1
                     i--;
                     break;
                 }
+            }*/
+            for(DefaultWeightedEdge e : graph.edgeSet())
+            {
+                double edgeDestroyed = generator.nextDouble();
+                if(edgeDestroyed > graph.getEdgeWeight(e))
+                {
+                    graph.removeEdge(e);
+                    break;
+                }
             }
 
             ConnectivityInspector inspector = new ConnectivityInspector(graph);
@@ -70,12 +80,6 @@ public class Exercise1
                 return;
             }
         }
-
-/*        ConnectivityInspector finalInspector = new ConnectivityInspector(graph);
-        if(finalInspector.isGraphConnected() == true)
-        {
-            connected = true;
-        }*/
     }
 
     public void addEdge(String v1, String v2, double weight)
@@ -99,9 +103,9 @@ public class Exercise1
                 secondVertexNumber = generator.nextInt(20) + 1;
             }
 
-            if(graph.getEdge("v" + firstVertexNumber, "v" + secondVertexNumber) == null)
+            if(graph.getEdge(String.valueOf(firstVertexNumber), String.valueOf(secondVertexNumber)) == null)
             {
-                addEdge("v" + firstVertexNumber, "v" + secondVertexNumber, 0.4);
+                addEdge(String.valueOf(firstVertexNumber), String.valueOf(secondVertexNumber), 0.4);
                 break;
             }
         }
@@ -115,9 +119,9 @@ public class Exercise1
         {
             ex = new Exercise1();
             ex.createGraph();
-            ex.addEdge("v1", "v20", 0.95);
-            ex.addEdge("v1", "v10", 0.8);
-            ex.addEdge("v5", "v15", 0.7);
+            ex.addEdge(String.valueOf(1), String.valueOf(20), 0.95);
+            ex.addEdge(String.valueOf(1), String.valueOf(10), 0.8);
+            ex.addEdge(String.valueOf(5), String.valueOf(15), 0.7);
 
             for(int j = 0; j < 4; j++)
             {
