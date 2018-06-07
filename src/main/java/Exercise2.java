@@ -11,12 +11,18 @@ public class Exercise2
     private SimpleGraph<String, MultipleWeightsEdge> graph;
     private double [][] flowMatrix;
     private double [][] edgeReliability;
+    private double [][] edgeCapacity;
+    private double averagePacketSize;
     private double maxDelay;
     private boolean connected;
+    private boolean overflow;
+    private boolean delayTooLarge;
 
     public Exercise2()
     {
         connected = true;
+        overflow = false;
+        delayTooLarge = false;
     }
 
     public void createGraph()
@@ -52,7 +58,6 @@ public class Exercise2
                 {
                     MultipleWeightsEdge e = (MultipleWeightsEdge)path.getEdgeList().get(k);
                     e.setFlow(e.getFlow() + flowMatrix[i][j]);
-                    e.setCapacity(25);
                 }
             }
         }
@@ -94,42 +99,12 @@ public class Exercise2
         return true;
     }
 
-    public void MonteCarloSimulation()
+    public void EdgeBurst()
     {
         Random generator = new Random();
 
         for(int i = 0; i < 5; i++)
         {
-/*            int firstVertexNumber = generator.nextInt(10) + 1;
-            int secondVertexNumber = generator.nextInt(10) + 1;
-
-            while (secondVertexNumber == firstVertexNumber) {
-                secondVertexNumber = generator.nextInt(10) + 1;
-            }
-
-            DijkstraShortestPath dijkstraPath = new DijkstraShortestPath(graph);
-            GraphPath path = dijkstraPath.getPath(String.valueOf(firstVertexNumber), String.valueOf(secondVertexNumber));
-
-            for (int j = 0; j < path.getLength(); j++)
-            {
-                MultipleWeightsEdge e = (MultipleWeightsEdge) path.getEdgeList().get(j);
-
-                int edgeDestroyed = generator.nextInt(101);
-                if (edgeDestroyed > e.getEndurance() * 100)
-                {
-                    graph.removeEdge(e);
-                    i--;
-                    boolean b = adjustWeights();
-
-                    if(b == false)
-                    {
-                        connected = false;
-                        return;
-                    }
-                    break;
-                }
-            }*/
-
             for(MultipleWeightsEdge e : graph.edgeSet())
             {
                 double edgeDestroyed = generator.nextDouble();
@@ -140,23 +115,23 @@ public class Exercise2
                 }
             }
 
-            boolean b = adjustWeights();
-            if(b == false)
-            {
-                connected = false;
-                return;
-            }
-
             ConnectivityInspector inspector = new ConnectivityInspector(graph);
             if (inspector.isGraphConnected() == false)
             {
                 connected = false;
                 return;
             }
+
+            boolean adjustment = adjustWeights();
+            if(adjustment == false)
+            {
+                overflow = true;
+                return;
+            }
         }
     }
 
-    public double averageDelay()
+    public void avgPacketSize()
     {
         double flowMatrixSum = 0;
         int elementCount = 0;
@@ -170,8 +145,21 @@ public class Exercise2
             }
         }
 
-        double averagePacketSize = flowMatrixSum / elementCount;
+        averagePacketSize = flowMatrixSum / elementCount;
+    }
+
+    public void averageDelay()
+    {
         double edgeSum = 0;
+        double flowMatrixSum = 0;
+
+        for(int i = 0; i < 10; i++)
+        {
+            for(int j = i + 1; j < 10; j++)
+            {
+                flowMatrixSum += flowMatrix[i][j];
+            }
+        }
 
         for(MultipleWeightsEdge e : graph.edgeSet())
         {
@@ -179,7 +167,11 @@ public class Exercise2
         }
 
         double averageDelay = Math.abs((1 / flowMatrixSum) * edgeSum);
-        return averageDelay;
+
+        if(averageDelay >= maxDelay)
+        {
+            delayTooLarge = true;
+        }
     }
 
     void load()
@@ -263,6 +255,33 @@ public class Exercise2
                 }
 
                 s = br.readLine();
+                regex = s.split(" ");
+                edgeCapacity = new double[l][l];
+                avgPacketSize();
+
+                for(int i = 0; i < l; i++)
+                {
+                    for(int j = 0; j < l; j++)
+                    {
+                        edgeCapacity[i][j] = Double.valueOf(regex[j]);
+                    }
+
+                    s = br.readLine();
+                    regex = s.split(" ");
+                }
+
+                for(int i = 0; i < l; i++)
+                {
+                    for(int j = i + 1; j < l; j++)
+                    {
+                        if(edgeCapacity[i][j] != 0)
+                        {
+                            graph.getEdge(String.valueOf(i + 1), String.valueOf(j + 1)).setCapacity(edgeCapacity[i][j]);
+                        }
+                    }
+                }
+
+                s = br.readLine();
                 maxDelay = Double.valueOf(s);
             }
             catch(IOException e)
@@ -278,24 +297,39 @@ public class Exercise2
 
     public static void main(String[] args)
     {
-        int numberOfConnectedGraphs = 0;
+        double numberOfConnectedGraphs = 0;
+        double numberOfCGandProperFlow = 0;
+        double success = 0;
         Exercise2 ex;
-        for(int i = 0; i < 1000; i++)
+
+        int n = 1000;
+        for(int i = 0; i < n; i++)
         {
             ex = new Exercise2();
             ex.createGraph();
             ex.load();
 
             ex.setWeights();
-            double delay = ex.averageDelay();
+            ex.EdgeBurst();
 
-            ex.MonteCarloSimulation();
-
-            if(ex.connected == true && delay < ex.maxDelay)
+            if(ex.connected == true /*&& delay < ex.maxDelay */)
             {
-                numberOfConnectedGraphs++;
+                numberOfConnectedGraphs++; //only graphs that are connected
+
+                if(ex.overflow == false)
+                {
+                    numberOfCGandProperFlow++; //connected graphs with proper flow after edge burst
+
+                    ex.averageDelay();
+                    if(ex.delayTooLarge == false)
+                    {
+                        success++; //connected graphs with proper flow and average delay fewer than max delay
+                    }
+                }
             }
         }
-        System.out.println(numberOfConnectedGraphs);
+        System.out.println(numberOfConnectedGraphs / n);
+        System.out.println(numberOfCGandProperFlow / n);
+        System.out.println(success / n);
     }
 }
